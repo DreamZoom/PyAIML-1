@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import jieba as jb
+
 def isChinese(c):
     # http://www.iteye.com/topic/558050
 
@@ -19,15 +21,11 @@ def isChinese(c):
     return any(s <= ord(c) <= e for s, e in r)
 
 def splitChinese(s):
+    
+    result = jb.cut(s)  
+    ret = '|'.join(result)
+    return ret.split("|")
 
-    result = []
-    for c in s:
-        if isChinese(c):
-            result.extend([" ", c, " "])
-        else:
-            result.append(c)
-    ret = ''.join(result)
-    return ret.split()
 
 
 def splitUnicode(s):
