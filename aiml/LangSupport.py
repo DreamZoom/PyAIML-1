@@ -42,6 +42,8 @@ def splitUnicode(s):
 def mergeChineseSpace(s):
     assert type(s) == unicode, "string must be a unicode"
     segs = splitChinese(s)
+    if len(segs) == 0 :
+        return s
     result = []
     for seg in segs:
         # English marks
