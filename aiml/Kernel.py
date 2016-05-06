@@ -1,11 +1,11 @@
-# -*- coding: latin-1 -*-
+# -*- coding: utf-8 -*-
 """This file contains the public interface to the aiml module."""
 import AimlParser
 import DefaultSubs
 import Utils
 from PatternMgr import PatternMgr
 from WordSub import WordSub
-from LangSupport import splitChinese, mergeChineseSpace
+from LangSupport import mergeChineseSpace,splitChinese
 
 from ConfigParser import ConfigParser
 import copy
@@ -265,7 +265,7 @@ class Kernel:
     def _deleteSession(self, sessionID):
         """Delete the specified session."""
         if self._sessions.has_key(sessionID):
-            _sessions.pop(sessionID)
+            self._sessions.pop(sessionID)
 
     def getSessionData(self, sessionID = None):
         """Return a copy of the session data dictionary for the
@@ -382,8 +382,11 @@ class Kernel:
         self.setPredicate(self._inputStack, inputStack, sessionID)
 
         # run the input through the 'normal' subber
-        subbedInput = self._subbers['normal'].sub(input)
-
+        input=u' '.join(splitChinese(input))
+        if input.find(" ") < 0 :
+            input=" "+input
+        subbedInput = u" ".join(self._subbers['normal'].sub(input).strip().split())
+        
         # fetch the bot's previous response, to pass to the match()
         # function as 'that'.
         outputHistory = self.getPredicate(self._outputHistory, sessionID)
@@ -1186,7 +1189,7 @@ if __name__ == "__main__":
     _testTag(k, 'topicstar test #1', 'test topicstar', ["Solyent Green is made of people!"])
     k.setPredicate("topic", "Soylent Ham and Cheese")
     _testTag(k, 'topicstar test #2', 'test topicstar multiple', ["Both Soylents Ham and Cheese are made of people!"])
-    _testTag(k, 'unicode support', u"郧上好", [u"Hey, you speak Chinese! 郧上好"])
+    _testTag(k, 'unicode support', u"浣犲ソ浣犲ソ", [u"Hey, you speak Chinese! 浣犲ソ浣犲ソ"])
     _testTag(k, 'uppercase', 'test uppercase', ["The Last Word Should Be UPPERCASE"])
     _testTag(k, 'version', 'test version', ["PyAIML is version %s" % k.version()])
     _testTag(k, 'whitespace preservation', 'test whitespace', ["Extra   Spaces\n   Rule!   (but not in here!)    But   Here   They   Do!"])
