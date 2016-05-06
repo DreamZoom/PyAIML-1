@@ -1,7 +1,12 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import jieba as jb
+import re
+a=u"([\u4e00-\u9fa5]+)( +)" 
+b=u"( +)([\u4e00-\u9fa5]+)"
+
+pa = re.compile(a)
+pb = re.compile(b)
 
 def isChinese(c):
     # http://www.iteye.com/topic/558050
@@ -20,13 +25,6 @@ def isChinese(c):
         (0x31C0, 0x31EF)]
     return any(s <= ord(c) <= e for s, e in r)
 
-def splitChinese(s):
-    
-    result = jb.cut(s)  
-    ret = '|'.join(result)
-    return ret.split("|")
-
-
 
 def splitUnicode(s):
     assert type(s) == unicode, "string must be a unicode"
@@ -39,22 +37,16 @@ def splitUnicode(s):
             result.append(seg)
     return result
 
+def splitChinese(s):
+    
+    result = jb.cut(s)
+    ret = '|'.join(result)
+    return ret.split("|")
+
 def mergeChineseSpace(s):
     assert type(s) == unicode, "string must be a unicode"
-    segs = splitChinese(s)
-    if len(segs) == 0 :
+    if len(s) == 0 :
         return s
-    result = []
-    for seg in segs:
-        # English marks
-        if seg[0] not in ".,?!":
-            try:
-                str(seg[0]) and result.append(" ")
-            except:
-                pass
-        result.append(seg)
-        try:
-            str(seg[-1]) and result.append(" ")
-        except:
-            pass
-    return u''.join(result).strip()
+    sa = pa.sub(r"\1",s)
+    sb = pb.sub(r"\2",sa)
+    return sb
