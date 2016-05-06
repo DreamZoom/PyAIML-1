@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """This module implements the WordSub class, modelled after a recipe
 in "Python Cookbook" (Recipe 3.14, "Replacing Multiple Patterns in a
 Single Pass" by Xavier Defrang).
@@ -28,7 +29,6 @@ not.
 try: dict
 except: from UserDict import UserDict as dict
 
-import ConfigParser
 import re
 import string
 
@@ -38,8 +38,11 @@ class WordSub(dict):
     def _wordToRegex(self, word):
         """Convert a word to a regex object which matches the word."""
         if word != "" and word[0].isalpha() and word[-1].isalpha():
-            return "\\b%s\\b" % re.escape(word)
-        else: 
+            if unicode(word[0]) >= u'\u4e00' and unicode(word[0]) <=u'\u9fa5' :
+                return "\s(%s)\s|\s(%s)$" %(word,word)
+            else :
+                return "\\b%s\\b" % re.escape(word)
+        else:
             return r"\b%s\b" % re.escape(word)
     
     def _update_regex(self):
@@ -62,7 +65,10 @@ class WordSub(dict):
 
     def __call__(self, match):
         """Handler invoked for each regex match."""
-        return self[match.group(0)]
+        #print "match:"+match.group(0).strip()
+        if match.group(0).strip()[0] >= u'\u4e00' and match.group(0).strip()[0] <=u'\u9fa5':
+            return " "+self[match.group(0).strip()]
+        return self[match.group(0).strip()]
 
     def __setitem__(self, i, y):
         self._regexIsDirty = True
@@ -80,19 +86,22 @@ class WordSub(dict):
 # self-test
 if __name__ == "__main__":
     subber = WordSub()
-    subber["apple"] = "banana"
+    subber[u"生快"] = u"生日快乐"
     subber["orange"] = "pear"
     subber["banana" ] = "apple"
     subber["he"] = "she"
     subber["I'd"] = "I would"
-
     # test case insensitivity
-    inStr =  "I'd like one apple, one Orange and one BANANA."
-    outStr = "I Would like one banana, one Pear and one APPLE."
-    if subber.sub(inStr) == outStr: print "Test #1 PASSED"    
-    else: print "Test #1 FAILED: '%s'" % subber.sub(inStr)
-
-    inStr = "He said he'd like to go with me"
-    outStr = "She said she'd like to go with me"
+    from aiml import LangSupport
+    inStr =  "祝你生快"
+    outStr = "祝你生日快乐"
+    instr = u' '.join(LangSupport.splitChinese(inStr))
+    print instr
+    print "Test #1 : '%s'" % subber.sub(instr)
+    
+    print re.sub("\s生快\s|\s生快$","生日快乐","祝 你 生快")
+    
+    inStr = u"I'd said he'd like to go with me"
+    outStr = u"I Would said she'd like to go with me"
     if subber.sub(inStr) == outStr: print "Test #2 PASSED"    
     else: print "Test #2 FAILED: '%s'" % subber.sub(inStr)
